@@ -3,6 +3,7 @@ import {
   Get,
   Post,
   Delete,
+  Patch,
   Body,
   Param,
   ParseIntPipe,
@@ -11,7 +12,8 @@ import {
 } from '@nestjs/common';
 import { InvestmentsService } from './investments.service';
 import { CreateInvestmentDto } from './dto/create-investment.dto';
- 
+import { UpdateInvestmentDto } from './dto/update-investment.dto';
+
 @Controller('investments')
 export class InvestmentsController {
   constructor(private readonly investmentsService: InvestmentsService) {}
@@ -47,5 +49,10 @@ export class InvestmentsController {
   @HttpCode(HttpStatus.OK)
   remove(@Param('id', ParseIntPipe) id: number) {
     return this.investmentsService.remove(id);
+  }
+
+  @Patch(':id')
+  update(@Param('id') id: string, @Body() dto: UpdateInvestmentDto) {
+    return this.investmentsService.update(+id, dto);
   }
 }

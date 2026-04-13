@@ -1,5 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateInvestmentDto } from './dto/create-investment.dto';
+import { UpdateInvestmentDto } from './dto/update-investment.dto';
 
 @Injectable()
 export class InvestmentsService {
@@ -48,5 +49,16 @@ export class InvestmentsService {
       profitLossPercent: +(totalInvested > 0 ? (profitLoss / totalInvested) * 100 : 0).toFixed(2),
       totalAssets: list.length,
     };
+  }
+
+  update(id: number, dto: UpdateInvestmentDto) {
+    const investment = this.findOne(id);
+
+    if (!investment) {
+      throw new NotFoundException('Investment not found');
+    }
+
+    Object.assign(investment, dto);
+    return investment;
   }
 }
