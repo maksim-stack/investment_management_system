@@ -81,7 +81,7 @@ investment_management_system/
 
 ```bash
 # Клонувати репозиторій
-git clone https://github.com/YOUR_USERNAME/investment_management_system.git
+git clone https://github.com/maksim-stack/investment_management_system.git
 cd investment_management_system/backend
 
 # Встановити залежності
@@ -120,7 +120,7 @@ http://localhost:3000
 
 ---
 
-### 📅 День 2 — Backend: повний CRUD та валідація
+### ✅ День 2 — Backend: повний CRUD та валідація
 **Дата:** 14.04.2026
 
 **Завдання:**
