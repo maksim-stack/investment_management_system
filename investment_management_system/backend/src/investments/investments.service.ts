@@ -1,64 +1,169 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { Investment } from './entities/investment.entity';
 import { CreateInvestmentDto } from './dto/create-investment.dto';
 import { UpdateInvestmentDto } from './dto/update-investment.dto';
 
+/*
+ * InvestmentsService - бизнес-логика для работы с инвестициями
+ */
 @Injectable()
 export class InvestmentsService {
-  private investments = [
-    { id: 1, userId: 1, asset: 'Apple Inc.', type: 'stock', amount: 5000, purchasePrice: 150.25, currentPrice: 178.5, quantity: 33, purchaseDate: '2024-01-15', notes: 'Long-term hold' },
-    { id: 2, userId: 1, asset: 'Bitcoin', type: 'crypto', amount: 3000, purchasePrice: 42000, currentPrice: 68000, quantity: 0.071, purchaseDate: '2024-02-01' },
-    { id: 3, userId: 2, asset: 'S&P 500 ETF', type: 'etf', amount: 10000, purchasePrice: 480, currentPrice: 512, quantity: 20, purchaseDate: '2023-11-10' },
-  ];
-  private nextId = 4;
+  constructor(
+    @InjectRepository(Investment)
+    private investmentsRepository: Repository<Investment>,
+  ) {}
 
-  findAll() { return this.investments; }
+  /*
+   * Создать новую инвестицию
+   */
+  async create(createInvestmentDto: CreateInvestmentDto): Promise<Investment> {
+    const investment = this.investmentsRepository.create({
+      ...createInvestmentDto,
+      // Если currentPrice не указана, берём purchasePrice
+      currentPrice: createInvestmentDto.currentPrice || createInvestmentDto.purchasePrice,
+    });
 
-  findOne(id: number) {
-    const inv = this.investments.find(i => i.id === id);
-    if (!inv) throw new NotFoundException(`Investment ${id} not found`);
-    return inv;
+    return await this.investmentsRepository.save(investment);
   }
 
-  findByUser(userId: number) {
-    return this.investments.filter(i => i.userId === userId);
+  /*
+   * Получить все инвестиции
+   * SQL: SELECT * FROM investments;
+   */
+  async findAll(): Promise<Investment[]> {
+    return await this.investmentsRepository.find({
+    relations: ['user'],
+    order: { purchaseDate: 'DESC' },
+    });
   }
 
-  create(dto: CreateInvestmentDto) {
-    const inv = { id: this.nextId++, ...dto, currentPrice: dto.purchasePrice };
-    this.investments.push(inv);
-    return inv;
+  /*
+   * Получить одну инвестицию по ID
+   * SQL: SELECT * FROM investments WHERE id = $1 LIMIT 1;
+   */
+  async findOne(id: number): Promise<Investment> {
+    const investment = await this.investmentsRepository.findOne({
+      where: { id },
+      relations: ['user'],
+    });
+
+    if (!investment) {
+      throw new NotFoundException(`Investment with ID ${id} not found`);
+    }
+
+    return investment;
   }
 
-  remove(id: number) {
-    const index = this.investments.findIndex(i => i.id === id);
-    if (index === -1) throw new NotFoundException(`Investment ${id} not found`);
-    this.investments.splice(index, 1);
-    return { message: `Investment ${id} deleted` };
+  /*
+   * Получить все инвестиции конкретного пользователя
+   * SQL: SELECT * FROM investments WHERE userId = $1;
+   */
+  async findByUser(userId: number): Promise<Investment[]> {
+    return await this.investmentsRepository.find({
+      where: { userId },
+      order: { purchaseDate: 'DESC' }, // Сортировка: новые вверху
+    });
   }
 
-  getPortfolioSummary(userId: number) {
-    const list = this.findByUser(userId);
-    const totalInvested = list.reduce((s, i) => s + i.amount, 0);
-    const currentValue = list.reduce((s, i) => s + i.currentPrice * i.quantity, 0);
+  /*
+   * Обновить инвестицию
+   */
+  async update(id: number, updateInvestmentDto: UpdateInvestmentDto): Promise<Investment> {
+    const investment = await this.findOne(id);
+
+    // Обновляем поля
+    Object.assign(investment, updateInvestmentDto);
+
+    // Сохраняем в БД
+    // SQL: UPDATE investments SET ... WHERE id = $1;
+    return await this.investmentsRepository.save(investment);
+  }
+
+  /*
+   * Удалить инвестицию
+   * SQL: DELETE FROM investments WHERE id = $1;
+   */
+  async remove(id: number): Promise<void> {
+    const investment = await this.findOne(id);
+    await this.investmentsRepository.remove(investment);
+  }
+
+  /*
+   * Получить сводку по портфелю пользователя
+   */
+  async getPortfolioSummary(userId: number) {
+    const investments = await this.findByUser(userId);
+
+    // Если у пользователя нет инвестиций
+    if (investments.length === 0) {
+      return {
+        userId,
+        totalInvested: 0,
+        currentValue: 0,
+        profitLoss: 0,
+        profitLossPercent: 0,
+        totalAssets: 0,
+      };
+    }
+
+    // Расчёт общей суммы инвестиций
+    const totalInvested = investments.reduce((sum, inv) => {
+      return sum + Number(inv.amount);
+    }, 0);
+
+    // Расчёт текущей стоимости портфеля
+    const currentValue = investments.reduce((sum, inv) => {
+      return sum + Number(inv.currentPrice) * Number(inv.quantity);
+    }, 0);
+
+    // Расчёт прибыли/убытка
     const profitLoss = currentValue - totalInvested;
+
+    // Расчёт прибыли/убытка в процентах
+    const profitLossPercent = totalInvested > 0 
+      ? (profitLoss / totalInvested) * 100 
+      : 0;
+
     return {
       userId,
-      totalInvested: +totalInvested.toFixed(2),
-      currentValue: +currentValue.toFixed(2),
-      profitLoss: +profitLoss.toFixed(2),
-      profitLossPercent: +(totalInvested > 0 ? (profitLoss / totalInvested) * 100 : 0).toFixed(2),
-      totalAssets: list.length,
+      totalInvested: Number(totalInvested.toFixed(2)),
+      currentValue: Number(currentValue.toFixed(2)),
+      profitLoss: Number(profitLoss.toFixed(2)),
+      profitLossPercent: Number(profitLossPercent.toFixed(2)),
+      totalAssets: investments.length,
     };
   }
 
-  update(id: number, dto: UpdateInvestmentDto) {
-    const investment = this.findOne(id);
+  /*
+   * ДОПОЛНИТЕЛЬНЫЙ МЕТОД: Обновить текущую цену актива
+   * Полезно для обновления рыночных цен
+   */
+  async updateCurrentPrice(id: number, newPrice: number): Promise<Investment> {
+    const investment = await this.findOne(id);
+    investment.currentPrice = newPrice;
+    return await this.investmentsRepository.save(investment);
+  }
 
-    if (!investment) {
-      throw new NotFoundException('Investment not found');
-    }
+  /*
+   * ДОПОЛНИТЕЛЬНЫЙ МЕТОД: Получить инвестиции по типу
+   * Например, все криптовалюты или все акции
+   */
+  async findByType(type: string): Promise<Investment[]> {
+    return await this.investmentsRepository.find({
+      where: { type },
+      order: { purchaseDate: 'DESC' },
+    });
+  }
 
-    Object.assign(investment, dto);
-    return investment;
+  /*
+   * ДОПОЛНИТЕЛЬНЫЙ МЕТОД: Получить инвестиции по типу для конкретного пользователя
+   */
+  async findByUserAndType(userId: number, type: string): Promise<Investment[]> {
+    return await this.investmentsRepository.find({
+      where: { userId, type },
+      order: { purchaseDate: 'DESC' },
+    });
   }
 }

@@ -1,8 +1,31 @@
 import { Module } from '@nestjs/common';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { ConfigModule } from '@nestjs/config';
 import { UsersModule } from './users/users.module';
 import { InvestmentsModule } from './investments/investments.module';
+import { User } from './users/entities/user.entity';
+import { Investment } from './investments/entities/investment.entity';
 
 @Module({
-  imports: [UsersModule, InvestmentsModule],
+  imports: [
+    ConfigModule.forRoot({
+      isGlobal: true,
+    }), 
+    
+    TypeOrmModule.forRoot({
+      type: 'postgres',
+      host: process.env.DB_HOST,
+      port: parseInt(process.env.DB_PORT || '5432', 10) ,
+      username: process.env.DB_USERNAME,
+      password: process.env.DB_PASSWORD,
+      database: process.env.DB_DATABASE,
+      entities: [User, Investment],
+      synchronize: true, // ТОЛЬКО для разработки! Автоматически создаёт таблицы 
+      logging: true, // Показывает SQL запросы в консоли
+    }), 
+    
+    UsersModule, 
+    InvestmentsModule
+  ],
 })
 export class AppModule {}

@@ -33,7 +33,6 @@ export class InvestmentsController {
     return this.investmentsService.getPortfolioSummary(userId);
   }
  
-  // ✅ Динамічний маршрут (:id) — завжди ПІСЛЯ статичних
   @Get(':id')
   findOne(@Param('id', ParseIntPipe) id: number) {
     return this.investmentsService.findOne(id);
@@ -42,6 +41,7 @@ export class InvestmentsController {
   @Post()
   @HttpCode(HttpStatus.CREATED)
   create(@Body() createInvestmentDto: CreateInvestmentDto) {
+    console.log('🔥 CONTROLLER HIT');
     return this.investmentsService.create(createInvestmentDto);
   }
  
@@ -52,7 +52,7 @@ export class InvestmentsController {
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() dto: UpdateInvestmentDto) {
-    return this.investmentsService.update(+id, dto);
+  update(@Param('id', ParseIntPipe) id: number, @Body() dto: UpdateInvestmentDto) {
+    return this.investmentsService.update(id, dto);
   }
 }
