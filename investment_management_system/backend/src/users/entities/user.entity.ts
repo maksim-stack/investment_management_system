@@ -12,13 +12,16 @@ export class User {
     @Column({ unique: true })
     email: string;
 
+    @Column()
+    password: string;
+
     @Column({
         type: 'enum',
         enum: ['conservative', 'moderate', 'aggressive'],
         default: 'moderate',
     })
     riskProfile: string;
-
+    
     @CreateDateColumn()
     createdAt: Date;
 
