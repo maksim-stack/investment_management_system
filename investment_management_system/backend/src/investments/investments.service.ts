@@ -1,4 +1,5 @@
-import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
+// investments.service.ts - бизнес-логика для работы с инвестициями
+import { Injectable, NotFoundException, ForbiddenException, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Investment } from './entities/investment.entity';
@@ -19,12 +20,22 @@ export class InvestmentsService {
   /*
    * Создать новую инвестицию
    */
-  async create(createInvestmentDto: CreateInvestmentDto): Promise<Investment> {
+  async create(dto: CreateInvestmentDto, userId: number): Promise<Investment> {
     const investment = this.investmentsRepository.create({
-      ...createInvestmentDto,
+      ...dto,
+      userId,
+      purchaseDate: new Date(), // Устанавливаем текущую дату покупки
       // Если currentPrice не указана, берём purchasePrice
-      currentPrice: createInvestmentDto.currentPrice || createInvestmentDto.purchasePrice,
+      currentPrice: dto.currentPrice || dto.purchasePrice,
     });
+
+    if (!dto.asset || dto.asset.trim() === '') {
+      throw new BadRequestException('Asset is required');
+    }
+
+    if (dto.quantity <= 0) {
+      throw new BadRequestException('Quantity must be > 0');
+    }
 
     return await this.investmentsRepository.save(investment);
   }
@@ -130,7 +141,7 @@ export class InvestmentsService {
 
     // Расчёт общей суммы инвестиций
     const totalInvested = investments.reduce((sum, inv) => {
-      return sum + Number(inv.amount);
+      return sum + Number(inv.quantity) * Number(inv.purchasePrice);
     }, 0);
 
     // Расчёт текущей стоимости портфеля

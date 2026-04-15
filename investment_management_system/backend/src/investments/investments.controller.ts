@@ -1,3 +1,4 @@
+// src/investments/investments.controller.ts
 import {
   Controller,
   Get,
@@ -41,7 +42,7 @@ export class InvestmentsController {
   @Post()
   @HttpCode(HttpStatus.CREATED)
   create(@Body() dto: CreateInvestmentDto, @Req() req) {
-    return this.investmentsService.create({ ...dto, userId: req.user.userId });
+    return this.investmentsService.create(dto, req.user.userId );
   }
  
   @Delete(':id')

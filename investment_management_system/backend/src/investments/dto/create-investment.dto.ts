@@ -4,6 +4,8 @@ import {
   IsEnum,
   IsDateString,
   IsOptional,
+  IsNotEmpty,
+  Min,
 } from 'class-validator';
 
 export enum InvestmentType {
@@ -15,29 +17,25 @@ export enum InvestmentType {
 }
 
 export class CreateInvestmentDto {
-  @IsNumber()
-  userId: number;
-
   @IsString()
+  @IsNotEmpty()
   asset: string;
 
   @IsEnum(InvestmentType)
+  @IsNotEmpty()
   type: InvestmentType;
 
   @IsNumber()
-  amount: number;
-
-  @IsNumber()
+  @Min(0.01)
   purchasePrice: number;
 
   @IsNumber()
+  @Min(0.01)
   currentPrice: number;
 
   @IsNumber()
+  @Min(0.0001)
   quantity: number;
-
-  @IsDateString()
-  purchaseDate: string;
 
   @IsOptional()
   @IsString()

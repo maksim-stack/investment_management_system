@@ -9,7 +9,7 @@ export class Investment {
     @Column()
     userId: number;
 
-    @Column({ length: 200 })
+    @Column({ nullable: false, length: 150 })
     asset: string;
 
     @Column({
@@ -18,22 +18,19 @@ export class Investment {
     })
     type: string;
 
-    @Column('decimal', { precision: 12, scale: 2 })
-    amount: number;
-
-    @Column('decimal', { precision: 10, scale: 2 })
+    @Column({ type: 'numeric', nullable: false, precision: 10, scale: 2, transformer: { to: (v: number) => v, from: (v: string) => parseFloat(v) } })
     purchasePrice: number;
 
-    @Column('decimal', { precision: 10, scale: 2})
+    @Column({ type: 'numeric', nullable: false, precision: 10, scale: 2 , transformer: { to: (v: number) => v, from: (v: string) => parseFloat(v) } })
     currentPrice: number;
 
-    @Column('decimal', { precision: 10, scale: 2 })
+    @Column({ type: 'numeric', nullable: false, precision: 10, scale: 4, transformer: { to: (v: number) => v, from: (v: string) => parseFloat(v) } })
     quantity: number;
 
     @Column({ type: 'text', nullable: true })
     notes: string;
 
-    @Column({ type: 'date' })
+    @Column({ type: 'timestamp' })
     purchaseDate: Date;
 
     @ManyToOne(() => User, (user) => user.investments, { onDelete: 'CASCADE' })
