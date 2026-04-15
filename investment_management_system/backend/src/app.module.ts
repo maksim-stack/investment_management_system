@@ -5,6 +5,8 @@ import { UsersModule } from './users/users.module';
 import { InvestmentsModule } from './investments/investments.module';
 import { User } from './users/entities/user.entity';
 import { Investment } from './investments/entities/investment.entity';
+import { AuthModule } from './auth/auth.module';
+import { JwtModule } from '@nestjs/jwt';
 
 @Module({
   imports: [
@@ -25,7 +27,7 @@ import { Investment } from './investments/entities/investment.entity';
     }), 
     
     UsersModule, 
-    InvestmentsModule
+    InvestmentsModule, AuthModule
   ],
 })
 export class AppModule {}

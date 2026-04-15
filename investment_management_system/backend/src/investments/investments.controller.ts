@@ -9,50 +9,49 @@ import {
   ParseIntPipe,
   HttpCode,
   HttpStatus,
+  UseGuards, 
+  Req 
 } from '@nestjs/common';
 import { InvestmentsService } from './investments.service';
 import { CreateInvestmentDto } from './dto/create-investment.dto';
 import { UpdateInvestmentDto } from './dto/update-investment.dto';
+import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 
+@UseGuards(JwtAuthGuard)
 @Controller('investments')
 export class InvestmentsController {
   constructor(private readonly investmentsService: InvestmentsService) {}
- 
-  @Get()
-  findAll() {
-    return this.investmentsService.findAll();
-  }
-
-  @Get('user/:userId')
-  findByUser(@Param('userId', ParseIntPipe) userId: number) {
-    return this.investmentsService.findByUser(userId);
+  
+  @Get('me')
+  findMyInvestments(@Req() req) {
+    console.log('CONTROLLER REACHED');
+    return this.investmentsService.findByUser(req.user.userId);
   }
  
-  @Get('user/:userId/summary')
-  getPortfolioSummary(@Param('userId', ParseIntPipe) userId: number) {
-    return this.investmentsService.getPortfolioSummary(userId);
+  @Get('me/summary')
+  getPortfolioSummary(@Req() req) {
+    return this.investmentsService.getPortfolioSummary(req.user.userId);
   }
  
   @Get(':id')
-  findOne(@Param('id', ParseIntPipe) id: number) {
-    return this.investmentsService.findOne(id);
+  findOne(@Param('id', ParseIntPipe) id: number, @Req() req) {
+    return this.investmentsService.findOne(id, req.user.userId);
   }
  
   @Post()
   @HttpCode(HttpStatus.CREATED)
-  create(@Body() createInvestmentDto: CreateInvestmentDto) {
-    console.log('🔥 CONTROLLER HIT');
-    return this.investmentsService.create(createInvestmentDto);
+  create(@Body() dto: CreateInvestmentDto, @Req() req) {
+    return this.investmentsService.create({ ...dto, userId: req.user.userId });
   }
  
   @Delete(':id')
   @HttpCode(HttpStatus.OK)
-  remove(@Param('id', ParseIntPipe) id: number) {
-    return this.investmentsService.remove(id);
+  remove(@Param('id', ParseIntPipe) id: number, @Req() req) {
+    return this.investmentsService.remove(id, req.user.userId);
   }
 
   @Patch(':id')
-  update(@Param('id', ParseIntPipe) id: number, @Body() dto: UpdateInvestmentDto) {
-    return this.investmentsService.update(id, dto);
+  update(@Param('id', ParseIntPipe) id: number, @Body() dto: UpdateInvestmentDto, @Req() req) {
+    return this.investmentsService.update(id, dto, req.user.userId );
   }
 }

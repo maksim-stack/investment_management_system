@@ -200,6 +200,72 @@ http://localhost:3000
 - Данные сохраняются после перезапуска
 
 ---
+
+### ✅ День 3 (Опціонально) — JWT Authentication + Protected API + Investments Security
+**Дата:** 15.04.2026
+
+**Завдання:**
+- [x] Реалізувати JWT authentication (login / token generation)
+- [x] Налаштувати Passport JWT Strategy
+- [x] Додати JwtAuthGuard для захисту ендпоінтів
+- [x] Прив’язати користувача до інвестицій через userId
+- [x] Реалізувати перевірку доступу до ресурсів (ownership check)
+- [x] Протестувати авторизацію через Postman
+
+**Що було реалізовано:**
+- Додано JWT авторизацію:
+  - login endpoint (/api/auth/login)
+  - генерація access token (JWT)
+  - payload містить sub (userId) та email
+- Налаштовано Passport JWT Strategy:
+  - валідація токена через secret key
+  - автоматичне отримання req.user
+  - логування payload для дебагу
+- Реалізовано захист маршрутів:
+  - JwtAuthGuard для всіх protected endpoints
+  - доступ тільки при наявності валідного Bearer token
+- Інвестиції прив’язані до користувача:
+  - userId береться з JWT (sub)
+  - всі інвестиції фільтруються по користувачу
+  - реалізовано /investments/me
+- Додано контроль доступу:
+  - користувач може отримувати тільки свої інвестиції
+  - перевірка ownership на рівні backend
+  - захист від доступу до чужих ресурсів (403 Forbidden)
+
+**Тестування:**
+
+Всі ендпоінти були протестовані через **Postman**:
+
+**Перевірено:**
+
+- login → 200 OK + JWT token
+- доступ без токена → 401 Unauthorized
+- доступ з валідним токеном → 200 OK
+- доступ до чужих даних → 403 Forbidden
+- створення інвестицій → 201 Created
+- отримання інвестицій користувача → 200 OK
+
+**Виявлені проблеми та рішення:**
+
+- ❌ invalid signature
+  - причина: неправильний JWT secret
+  - рішення: уніфіковано secret у .env
+- ❌ 401 Unauthorized (No auth token)
+  - причина: відсутній Bearer token у headers
+  - рішення: налаштовано Postman Authorization
+- ❌ 403 Forbidden
+  - причина: доступ до чужого userId
+  - рішення: додано перевірку ownership
+
+**Результат:**
+
+- Повністю працююча JWT авторизація
+- Захищений REST API
+- Інвестиції прив’язані до користувача
+- Реалізовано контроль доступу (security layer)
+- Backend готовий до інтеграції з React frontend
+
 ### 🔜 День 3 — Налаштування Frontend
 > _Буде додано..._
 

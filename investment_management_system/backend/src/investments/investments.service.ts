@@ -1,9 +1,10 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Investment } from './entities/investment.entity';
 import { CreateInvestmentDto } from './dto/create-investment.dto';
 import { UpdateInvestmentDto } from './dto/update-investment.dto';
+import { dot } from 'node:test/reporters';
 
 /*
  * InvestmentsService - бизнес-логика для работы с инвестициями
@@ -43,14 +44,17 @@ export class InvestmentsService {
    * Получить одну инвестицию по ID
    * SQL: SELECT * FROM investments WHERE id = $1 LIMIT 1;
    */
-  async findOne(id: number): Promise<Investment> {
+  async findOne(id: number, userId: number) {
     const investment = await this.investmentsRepository.findOne({
       where: { id },
-      relations: ['user'],
     });
 
     if (!investment) {
-      throw new NotFoundException(`Investment with ID ${id} not found`);
+      throw new NotFoundException(`Investment not found`);
+    }
+
+    if (investment.userId !== userId) {
+      throw new ForbiddenException(`Access denied`);
     }
 
     return investment;
@@ -70,24 +74,40 @@ export class InvestmentsService {
   /*
    * Обновить инвестицию
    */
-  async update(id: number, updateInvestmentDto: UpdateInvestmentDto): Promise<Investment> {
-    const investment = await this.findOne(id);
+  async update(id: number, dto: UpdateInvestmentDto, userId: number) {
+    const investment = await this.findOne(id, userId);
 
-    // Обновляем поля
-    Object.assign(investment, updateInvestmentDto);
+    if (!investment) {
+      throw new NotFoundException(`Investment not found`);
+    }
+
+    if (investment.userId !== userId) {
+      throw new ForbiddenException(`Access denied`);
+    }
+
+    await this.investmentsRepository.update(id, dto);
 
     // Сохраняем в БД
     // SQL: UPDATE investments SET ... WHERE id = $1;
-    return await this.investmentsRepository.save(investment);
+    return this.findOne(id, userId);
   }
 
   /*
    * Удалить инвестицию
    * SQL: DELETE FROM investments WHERE id = $1;
    */
-  async remove(id: number): Promise<void> {
-    const investment = await this.findOne(id);
-    await this.investmentsRepository.remove(investment);
+  async remove(id: number, userId: number) {
+    const investment = await this.findOne(id, userId);
+    
+    if (!investment) {
+      throw new NotFoundException(`Investment not found`);
+    }
+
+    if (investment.userId !== userId) {
+      throw new NotFoundException(`Access denied`);
+    }
+
+    return this.investmentsRepository.delete(id);
   }
 
   /*
@@ -140,8 +160,8 @@ export class InvestmentsService {
    * ДОПОЛНИТЕЛЬНЫЙ МЕТОД: Обновить текущую цену актива
    * Полезно для обновления рыночных цен
    */
-  async updateCurrentPrice(id: number, newPrice: number): Promise<Investment> {
-    const investment = await this.findOne(id);
+  async updateCurrentPrice(id: number, newPrice: number, userId: number): Promise<Investment> {
+    const investment = await this.findOne(id, userId);
     investment.currentPrice = newPrice;
     return await this.investmentsRepository.save(investment);
   }
