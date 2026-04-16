@@ -1,18 +1,28 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { ConfigModule } from '@nestjs/config';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { UsersModule } from './users/users.module';
 import { InvestmentsModule } from './investments/investments.module';
 import { User } from './users/entities/user.entity';
 import { Investment } from './investments/entities/investment.entity';
 import { AuthModule } from './auth/auth.module';
+import { CacheModule } from '@nestjs/cache-manager';
 import { JwtModule } from '@nestjs/jwt';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
-    }), 
+    }),
+
+    CacheModule.registerAsync({
+      isGlobal: true,
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: (config: ConfigService) => ({
+        ttl: config.get<number>('CACHE_TTL') || 300,
+      }),
+    }),
     
     TypeOrmModule.forRoot({
       type: 'postgres',
@@ -27,7 +37,8 @@ import { JwtModule } from '@nestjs/jwt';
     }), 
     
     UsersModule, 
-    InvestmentsModule, AuthModule
+    InvestmentsModule, 
+    AuthModule,
   ],
 })
 export class AppModule {}

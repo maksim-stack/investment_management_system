@@ -1,5 +1,13 @@
+// users/entities/user.entity.ts
 import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, OneToMany } from 'typeorm';
 import { Investment } from '../../investments/entities/investment.entity';
+import { Exclude } from 'class-transformer';
+
+export enum RiskProfile {
+    CONSERVATIVE = 'conservative',
+    MODERATE = 'moderate',
+    AGGRESSIVE = 'aggressive',
+}
 
 @Entity('users')
 export class User {
@@ -13,6 +21,7 @@ export class User {
     email: string;
 
     @Column()
+    @Exclude()
     password: string;
 
     @Column({
@@ -20,7 +29,7 @@ export class User {
         enum: ['conservative', 'moderate', 'aggressive'],
         default: 'moderate',
     })
-    riskProfile: string;
+    riskProfile: RiskProfile;
     
     @CreateDateColumn()
     createdAt: Date;

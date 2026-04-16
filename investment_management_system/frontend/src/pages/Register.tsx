@@ -177,7 +177,7 @@ export default function Register() {
                     Register
                 </button>
 
-                <div style={{ marginTop: 15 }}>
+                <div style={{ marginTop: 15, textAlign: "center" }}>
                     <span>Already have an account? </span>
                     <Link to="/login" style={{ color: "#3b82f6" }}>
                         Login

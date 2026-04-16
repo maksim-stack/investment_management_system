@@ -94,13 +94,19 @@ export default function Investments() {
         notes: "",
     });
 
-    const { logout } = useAuth();
+    const { logout} = useAuth();
     const navigate = useNavigate();
+
+    const  userProfile = useNavigate();
 
     const handleLogout = () => {
         logout();
         navigate("/login");
     }
+
+    const handleProfile = () => {
+        userProfile("/profile");
+    };
 
     const loadData = async () => {
         console.log("loading investments...");
@@ -199,30 +205,20 @@ export default function Investments() {
         loadSummary();
     };
 
-return (
-        <div style={{ padding: 20, background: "#f5f6fa", minHeight: "100vh" }}>
-
-            <button
-                onClick={handleLogout}
-                style={{
-                    position: "absolute",
-                    top: 20,
-                    right: 20,
-                    padding: "8px 12px",
-                    background: "#ef4444",
-                    color: "white",
-                    border: "none",
-                    borderRadius: 8,
-                    cursor: "pointer",
-                }}
-            >
+    return (
+        <div style={pageStyle}>
+            <button onClick={handleLogout} style={logoutBtn}>
                 Logout
             </button>
 
-            <h2 style={{ marginBottom: 20 }}>📊 Investment Dashboard</h2>
+            <button onClick={handleProfile} style={profileBtn}>
+                👤 Profile
+            </button>
+
+            <h2 style={titleStyle}>📊 Investment Dashboard</h2>
 
             {/* SUMMARY */}
-            <div style={{ display: "flex", gap: 12, marginBottom: 20 }}>
+            <div style={summaryWrap}>
                 <div style={cardStyle}>
                     <h4>Total Invested</h4>
                     <p>{summary?.totalInvested ?? 0}</p>
@@ -235,7 +231,7 @@ return (
 
                 <div style={cardStyle}>
                     <h4>Profit</h4>
-                    <p style={{ color: summary?.profitLoss >= 0 ? "green" : "red" }}>
+                    <p style={{ color: summary?.profitLoss >= 0 ? "#22c55e" : "#ef4444" }}>
                         {summary?.profitLoss ?? 0}
                     </p>
                 </div>
@@ -245,26 +241,17 @@ return (
             <div style={formStyle}>
                 <h3>➕ Create Investment</h3>
 
-                {/* ASSET */}
                 <div style={{ marginBottom: 10 }}>
                     <input
                         name="asset"
                         placeholder="Asset"
                         value={form.asset}
                         onChange={handleChange}
-                        style={{
-                            ...inputStyle,
-                            border: errors.asset ? "1px solid red" : inputStyle.border,
-                        }}
+                        style={inputStyle}
                     />
-                    {errors.asset && (
-                        <div style={{ color: "red", fontSize: 12, marginTop: 4 }}>
-                            {errors.asset}
-                        </div>
-                    )}
+                    {errors.asset && <div style={{ color: "#ef4444", fontSize: 12 }}>{errors.asset}</div>}
                 </div>
 
-                {/* TYPE */}
                 <div style={{ marginBottom: 10 }}>
                     <select
                         name="type"
@@ -278,123 +265,59 @@ return (
                     </select>
                 </div>
 
-                {/* PURCHASE PRICE */}
-                <div style={{ marginBottom: 10 }}>
-                    <input
-                        name="purchasePrice"
-                        type="text"
-                        placeholder="Purchase Price"
-                        value={form.purchasePrice}
-                        onChange={handleChange}
-                        style={{
-                            ...inputStyle,
-                            border: errors.purchasePrice ? "1px solid red" : inputStyle.border,
-                        }}
-                    />
-                    {errors.purchasePrice && (
-                        <div style={{ color: "red", fontSize: 12, marginTop: 4 }}>
-                            {errors.purchasePrice}
-                        </div>
-                    )}
-                </div>
+                <input
+                    name="purchasePrice"
+                    placeholder="Purchase Price"
+                    value={form.purchasePrice}
+                    onChange={handleChange}
+                    style={inputStyle}
+                />
+                {errors.purchasePrice && <div style={{ color: "#ef4444", fontSize: 12 }}>{errors.purchasePrice}</div>}
 
-                {/* CURRENT PRICE */}
-                <div style={{ marginBottom: 10 }}>
-                    <input
-                        name="currentPrice"
-                        type="text"
-                        placeholder="Current Price"
-                        value={form.currentPrice}
-                        onChange={handleChange}
-                        style={{
-                            ...inputStyle,
-                            border: errors.currentPrice ? "1px solid red" : inputStyle.border,
-                        }}
-                    />
-                    {errors.currentPrice && (
-                        <div style={{ color: "red", fontSize: 12, marginTop: 4 }}>
-                            {errors.currentPrice}
-                        </div>
-                    )}
-                </div>
+                <input
+                    name="currentPrice"
+                    placeholder="Current Price"
+                    value={form.currentPrice}
+                    onChange={handleChange}
+                    style={inputStyle}
+                />
+                {errors.currentPrice && <div style={{ color: "#ef4444", fontSize: 12 }}>{errors.currentPrice}</div>}
 
-                {/* QUANTITY */}
-                <div style={{ marginBottom: 10 }}>
-                    <input
-                        name="quantity"
-                        type="text"
-                        placeholder="Quantity"
-                        value={form.quantity}
-                        onChange={handleChange}
-                        style={{
-                            ...inputStyle,
-                            border: errors.quantity ? "1px solid red" : inputStyle.border,
-                        }}
-                    />
-                    {errors.quantity && (
-                        <div style={{ color: "red", fontSize: 12, marginTop: 4 }}>
-                            {errors.quantity}
-                        </div>
-                    )}
-                </div>
+                <input
+                    name="quantity"
+                    placeholder="Quantity"
+                    value={form.quantity}
+                    onChange={handleChange}
+                    style={inputStyle}
+                />
+                {errors.quantity && <div style={{ color: "#ef4444", fontSize: 12 }}>{errors.quantity}</div>}
 
-                {/* NOTES */}
-                <div style={{ marginBottom: 10 }}>
-                    <input
-                        name="notes"
-                        placeholder="Notes"
-                        value={form.notes}
-                        onChange={handleChange}
-                        style={inputStyle}
-                    />
-                </div>
+                <input
+                    name="notes"
+                    placeholder="Notes"
+                    value={form.notes}
+                    onChange={handleChange}
+                    style={inputStyle}
+                />
 
-                {/* BUTTON */}
                 <button onClick={handleCreate} style={buttonStyle}>
                     Create Investment
                 </button>
             </div>
 
-            {/* EDIT FORM */}
+            {/* EDIT */}
             {editId && (
                 <div style={editStyle}>
                     <h3>Edit Investment</h3>
 
-                    <input
-                        value={editAsset}
-                        onChange={(e) => setEditAsset(e.target.value)}
-                        style={inputStyle}
-                    />
-
-                    <input
-                        type="number"
-                        value={editQuantity}
-                        onChange={(e) => setEditQuantity(Number(e.target.value))}
-                        placeholder="Quantity"
-                        style={inputStyle}
-                    />
-
-                    <input
-                        type="number"
-                        value={editPurchasePrice}
-                        onChange={(e) => setEditPurchasePrice(Number(e.target.value))}
-                        placeholder="Purchase Price"
-                        style={inputStyle}
-                    />
-
-                    <input
-                        type="number"
-                        value={editCurrentPrice}
-                        onChange={(e) => setEditCurrentPrice(Number(e.target.value))}
-                        placeholder="Current Price"
-                        style={inputStyle}
-                    />
+                    <input value={editAsset} onChange={(e) => setEditAsset(e.target.value)} style={inputStyle} />
+                    <input value={editQuantity} onChange={(e) => setEditQuantity(Number(e.target.value))} style={inputStyle} />
+                    <input value={editPurchasePrice} onChange={(e) => setEditPurchasePrice(Number(e.target.value))} style={inputStyle} />
+                    <input value={editCurrentPrice} onChange={(e) => setEditCurrentPrice(Number(e.target.value))} style={inputStyle} />
 
                     <div style={{ display: "flex", gap: 10 }}>
-                        <button onClick={handleUpdate} style={buttonStyle}>
-                            Save
-                        </button>
-                        <button onClick={() => setEditId(null)}>
+                        <button onClick={handleUpdate} style={buttonStyle}>Save</button>
+                        <button onClick={() => setEditId(null)} style={{ ...buttonStyle, background: "#64748b" }}>
                             Cancel
                         </button>
                     </div>
@@ -407,17 +330,14 @@ return (
                     display: "grid",
                     gridTemplateColumns: `repeat(${columns}, 1fr)`,
                     gap: 12,
+                    marginTop: 20,
                 }}
             >
                 {data.map((inv) => {
-                    const invested =
-                        Number(inv.purchasePrice) * Number(inv.quantity);
-                    const current =
-                        Number(inv.currentPrice) * Number(inv.quantity);
+                    const invested = Number(inv.purchasePrice) * Number(inv.quantity);
+                    const current = Number(inv.currentPrice) * Number(inv.quantity);
                     const profit = current - invested;
-                    const profitPercent = invested
-                        ? ((profit / invested) * 100).toFixed(2)
-                        : "0";
+                    const profitPercent = invested ? ((profit / invested) * 100).toFixed(2) : "0";
 
                     return (
                         <div key={inv.id} style={invCard}>
@@ -429,20 +349,15 @@ return (
                             <p>💰 Invested: {invested.toFixed(2)}</p>
                             <p>📈 Current: {current.toFixed(2)}</p>
 
-                            <p
-                                style={{
-                                    color: profit >= 0 ? "green" : "red",
-                                    fontWeight: "bold",
-                                }}
-                            >
+                            <p style={{ color: profit >= 0 ? "#22c55e" : "#ef4444", fontWeight: 600 }}>
                                 Profit: {profit.toFixed(2)} ({profitPercent}%)
                             </p>
 
                             <div style={{ display: "flex", gap: 8 }}>
-                                <button onClick={() => startEdit(inv)}>
+                                <button onClick={() => startEdit(inv)} style={buttonStyle}>
                                     Edit
                                 </button>
-                                <button onClick={() => handleDelete(inv.id)}>
+                                <button onClick={() => handleDelete(inv.id)} style={{ ...buttonStyle, background: "#ef4444" }}>
                                     Delete
                                 </button>
                             </div>
@@ -454,53 +369,99 @@ return (
     );
 }
 
-/* STYLES */
+/* ================= STYLES ================= */
+
+const pageStyle: React.CSSProperties = {
+    padding: 20,
+    background: "#0f172a",
+    minHeight: "100vh",
+    color: "#e2e8f0",
+    fontFamily: "Inter, sans-serif",
+};
+
+const logoutBtn: React.CSSProperties = {
+    position: "absolute",
+    top: 20,
+    right: 20,
+    padding: "8px 12px",
+    background: "#ef4444",
+    color: "white",
+    border: "none",
+    borderRadius: 10,
+    cursor: "pointer",
+};
+
+const profileBtn: React.CSSProperties = {
+    position: "absolute",
+    top: 20,
+    right: 110,
+    padding: "8px 12px",
+    background: "#3b82f6",
+    color: "white",
+    border: "none",
+    borderRadius: 10,
+    cursor: "pointer",
+};
+
+const titleStyle: React.CSSProperties = {
+    marginBottom: 20,
+    fontSize: 24,
+    fontWeight: 700,
+};
+
+const summaryWrap: React.CSSProperties = {
+    display: "flex",
+    gap: 12,
+    marginBottom: 20,
+};
 
 const cardStyle: React.CSSProperties = {
     flex: 1,
     padding: 16,
     borderRadius: 12,
-    border: "1px solid #ddd",
-    background: "#fff",
-    boxShadow: "0 2px 8px rgba(0,0,0,0.05)",
+    background: "#1e293b",
+    border: "1px solid #334155",
 };
 
 const formStyle: React.CSSProperties = {
+    marginTop: 20,
     padding: 16,
     borderRadius: 12,
-    border: "1px solid #ddd",
-    marginBottom: 20,
-    background: "#fff",
+    background: "#1e293b",
+    border: "1px solid #334155",
 };
 
 const editStyle: React.CSSProperties = {
+    marginTop: 20,
     padding: 16,
     borderRadius: 12,
-    border: "1px solid #007bff",
-    marginBottom: 20,
-    background: "#eef6ff",
+    background: "#0b253a",
+    border: "1px solid #3b82f6",
 };
 
 const inputStyle: React.CSSProperties = {
-    display: "block",
     width: "100%",
-    padding: 8,
+    padding: 10,
     marginBottom: 10,
+    borderRadius: 8,
+    border: "1px solid #334155",
+    background: "#0f172a",
+    color: "#e2e8f0",
+    outline: "none",
 };
 
 const buttonStyle: React.CSSProperties = {
-    padding: "8px 16px",
-    background: "#111",
+    padding: "10px 14px",
+    background: "#22c55e",
     color: "#fff",
     border: "none",
-    borderRadius: 6,
+    borderRadius: 8,
     cursor: "pointer",
 };
 
 const invCard: React.CSSProperties = {
-    padding: 12,
+    padding: 14,
     borderRadius: 12,
-    border: "1px solid #ddd",
-    background: "#fff",
-    boxShadow: "0 1px 6px rgba(0,0,0,0.05)",
+    background: "#1e293b",
+    border: "1px solid #334155",
 };

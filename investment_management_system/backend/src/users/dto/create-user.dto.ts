@@ -1,3 +1,5 @@
+// users/dto/create-user.dto.ts
+// DTO (Data Transfer Object) для создания пользователя
 import { IsEmail, IsEnum, IsNotEmpty, IsString, MinLength } from 'class-validator';
 
 export enum RiskProfile {

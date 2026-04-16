@@ -4,6 +4,7 @@ import Login from "../pages/Login";
 import Investments from "../pages/Investments";
 import ProtectedRoute from "./ProtectedRoute";
 import Register from "../pages/Register";
+import Profile from "../pages/Profil";
 
 export default function AppRouter() {
     return (
@@ -12,6 +13,7 @@ export default function AppRouter() {
                 <Route path="/" element={<Navigate to="/login" />} />
                 <Route path="/login" element={<Login />} />
                 <Route path="/register" element={<Register />} />
+                <Route path="/profile" element={<Profile />} />
                 <Route
                     path="/investments"
                     element={
